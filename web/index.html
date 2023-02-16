@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="og:title" content="Terminal">
+  <meta name="og:description" content="web terminal that allows easy access to knowledge and experiments. A utility for any developer or computer enthusiast. New things are added all the time. do not miss!">
+  <link rel="stylesheet" href="index.css">
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+  <title>Terminal</title>
+</head>
+<body>
+        <div id="container">
+          <div id="header">
+            <h3>Command Line</h3>
+          </div>
+            <pre><output id="output"></output></pre>
+          <br>
+            <div id="prompt">
+                <div id="name">@$></div>
+                <input id="cmdline" type="text" autocomplete="off">
+            </div>
+        </div>
+  <div id="context-menu">
+      <div id="menu-copy" class="item"><i class="material-icons">content_copy</i> Copy</div>
+      <div id="menu-playback" class="item" disabled><i class="material-icons">play_arrow</i> Playback</div>
+      <div class="item" disabled><i class="material-icons">translate</i> Translate</div>
+    </div>
+  
+  <script src="index.js" type="module"></script>
+     
+  </script>
+  
+  <script src="https://www.google.com/recaptcha/enterprise.js?render=6LetyFEkAAAAAPTnXPqOk4BmfZwpNUAMHUJ4ZesL"></script>
+<script>
+grecaptcha.enterprise.ready(function() {
+    grecaptcha.enterprise.execute('6LetyFEkAAAAAPTnXPqOk4BmfZwpNUAMHUJ4ZesL', {action: 'login'}).then(function(token) {
+       
+    });
+});
+</script>
+    </body>
+</html>
