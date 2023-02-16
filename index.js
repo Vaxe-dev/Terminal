@@ -14,13 +14,8 @@ app.use((req, res, next) => {
 })
 app.use(express.static('web'));
 app.use((req, res) => {
-  console.log(req.path)
   if (req.path == "/") {
     res.sendFile(__dirname + "/web/index,html")
-  } else if (req.path.split("/")[1] == "plugin") {
-    if (fs.existsSync(__dirname + "/plugins/" + req.path.split("/")[2] + ".js")) {
-      res.sendFile(__dirname + "/plugins/" + req.path.split("/")[2] + ".js")
-    }
   }
 })
 io.on('connection', function(socket) {
