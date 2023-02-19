@@ -4,6 +4,7 @@ const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 const fs = require("fs");
 const path = require('path');
+const fetch = require('node-fetch');
 
 const PORT = 8080;
 const ONLINE_DIR = path.join(__dirname, 'online');
@@ -43,8 +44,31 @@ app.use((req, res) => {
 });
 io.on('connection', function(socket) {
   socket.on("start", function (reply) {
+    const ip = socket.handshake.address;
+    fetch(`https://get.geojs.io/v1/ip/geo/${ip}.json`)
+    .then(response => response.json())
+    .then(data => {
+      console.log('User location:', data);
+    })
+    .catch(error => {
+      console.log('Error:', error);
+    });
+    const browserName = () => {
+      const userAgent = socket.handshake.headers['user-agent'];
+      if (userAgent.indexOf("Chrome") > -1) {
+        return "Chrome"
+      } else if (userAgent.indexOf("Firefox") > -1) {
+        return "Firefox"
+      } else if (userAgent.indexOf("MSIE") > -1 || userAgent.indexOf("Trident/") > -1) {
+        return "Edge"
+      } else if (userAgent.indexOf("Safari") > -1) {
+        return "Safari"
+      } else {
+        return "Unknow"
+      }
+    }
     reply(JSON.parse(fs.readFileSync(__dirname + "/config.json")), fs.readdirSync(__dirname + "/web/commands"))
-    fs.writeFileSync(__dirname + "/online/" + socket.id + ".json",JSON.stringify({ip: socket.handshake.address.split(":")[3], account:""}))
+    fs.writeFileSync(__dirname + "/online/" + socket.id + ".json",JSON.stringify({ip: ip.split(":")[3], account:"",browser:browserName()}))
   })
   socket.on("account login", function (name, pass, call) {
     const accs = fs.readdirSync(__dirname + "/accounts")
@@ -66,6 +90,13 @@ io.on('connection', function(socket) {
     a.account = ""
     fs.writeFileSync(__dirname + "/online/" + socket.id + ".json",JSON.stringify(a))
   })
+  socket.on("account info", function (name, pass, call) {
+    const accs = fs.readdirSync(__dirname + "/accounts")
+    if (!accs.includes(name + ".json")) return call({status:false})
+    const acc = JSON.parse(fs.readFileSync(__dirname + "/accounts/" + name + ".json"))
+    if (acc.password != pass) return call({status:false})
+    call({status:true,role:acc.role,pluginSavedsCount:acc.pluginSaveds.length})
+  })
   socket.on("check certificate", function (url, cer, call) {
     if (!fs.existsSync(__dirname + "/certificates/" + cer + ".json")) return call({exists: false})
     const cert = JSON.parse(fs.readFileSync(__dirname + "/certificates/" + cer + ".json"))
@@ -77,8 +108,10 @@ io.on('connection', function(socket) {
     if (!accs.includes(name + ".json")) return;
     const acc = JSON.parse(fs.readFileSync(__dirname + "/accounts/" + name + ".json"))
     if (acc.password != pass) return;
-    acc.pluginSaveds.push({url: url, name: nam})
-    fs.writeFileSync(__dirname + "/accounts/" + name + ".json", JSON.stringify(acc))
+    if (!acc.pluginSaveds.includes({url: url, name: nam})) {
+      acc.pluginSaveds.push({url: url, name: nam})
+      fs.writeFileSync(__dirname + "/accounts/" + name + ".json", JSON.stringify(acc))
+    }
   })
   socket.on("remove plugin", function (name, pass, nam) {
     const accs = fs.readdirSync(__dirname + "/accounts")

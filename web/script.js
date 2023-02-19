@@ -254,7 +254,8 @@ const normalizePozition = (mouseX, mouseY) => {
 function pluginInstall(url, level, save, hash) {
   import(url).then((data) => {
     if (data.type == "script") {
-      pluginNames.push(data.name)
+      if (!pluginNames.includes(data.name)) {
+        pluginNames.push(data.name)
       plugins[data.name] = {}
       plugins[data.name].short = data.short
       plugins[data.name].script = data.script
@@ -278,16 +279,19 @@ function pluginInstall(url, level, save, hash) {
         }
       }
     }
-    next()
-    if (!hash)
+      if (!hash)
       write(`<b success>The plugin has been successfully installed.</b><br>`,true)
+      }
+    next()
     if (save) {
       if (!localStorage.getItem("plugins")) {
         localStorage.setItem("plugins", JSON.stringify([]))
       }
       const p = JSON.parse(localStorage.getItem("plugins"))
-      p.push(url)
-      localStorage.setItem("plugins", JSON.stringify(p))
+      if (!p.includes(url)) {
+        p.push(url)
+        localStorage.setItem("plugins", JSON.stringify(p))
+      }
       if (!!account.username) {
         socket.emit("save plugin", account.username, account.password, url, data.name)
       }
