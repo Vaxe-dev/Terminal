@@ -12,7 +12,7 @@ Vaxe is a web-based terminal that provides a modern and user-friendly interface 
 To use Vaxe, visit the [Vaxe web page](https://terminal.orielhaim.tk/) and start typing the commands in the terminal!
 
 ## Contributing
-We welcome contributions to Vaxe! If you have an idea for a new feature or would like to report a bug, please open an issue on this repository.
+We welcome contributions to Vaxe! If you have an idea for a new feature or would like to report a bug, please open an [Issue](https://github.com/Vaxe-dev/Terminal/issues) on this repository.
 
 ## Known Issues
 Vaxe is still in beta and may have some issues. We are actively working to resolve these issues, but if you encounter any problems, please let us know by opening an issue.
