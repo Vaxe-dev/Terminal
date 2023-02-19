@@ -465,7 +465,7 @@ socket.emit("start", (data, cmds) => {
     if (out.status == 200) {
       out.pluginSaveds.map((a) => {
         if (!pluginNames.includes(a.name)) {
-          pluginInstall(a.url, status.level, false, true)
+          pluginInstall(a.url, a.level, false, true)
         }
       })
       $("#name").html(localStorage.getItem("username") + "@$>")
@@ -483,9 +483,9 @@ socket.emit("start", (data, cmds) => {
   })
 })
 function cmdAdd(cmd) {
-  $("body").append(`<script src="${cmd}" type="module" id="a"></script>`)
+  $("body").append(`<script src="${cmd}" type="module" id="cmd_${cmd}"></script>`)
   import("/commands/" + cmd).then((data) => {
-    $("#a").remove()
+    $(`#cmd_${cmd}`).remove()
     commandNames.push(data.name)
     commands[data.name] = {}
     commands[data.name].short = data.short
