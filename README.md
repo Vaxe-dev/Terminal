@@ -5,8 +5,8 @@ Vaxe is a web-based terminal that provides a modern and user-friendly interface 
 - Real-life commands
 - Custom commands
 - User-friendly interface
-- [Plugin manager](TPM.md)
-- [Personal account](ACCOUNT.md)
+- [Plugin manager](https://github.com/Vaxe-dev/Terminal/wiki/TPM)
+- [Personal account](https://github.com/Vaxe-dev/Terminal/wiki/Accounts)
 
 ## Usage
 To use Vaxe, visit the [Vaxe web page](https://terminal.orielhaim.tk/) and start typing the commands in the terminal!
