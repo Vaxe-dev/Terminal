@@ -45,8 +45,22 @@ const commands = {
     short: "User connection and management options",
     script: (cmd) => {
       if (!cmd[0]) {
-        next()
-        write("use 'help account' to help")
+        if (!account.username) {
+          next()
+          write("You are not connected to any account. To log in, run the command: account login\n")
+        } else {
+          socket.emit("account info",account.username, account.password, (data) => {
+            next()
+            write(`<strong>Account Info</strong><br>
+Username:
+  ${account.username}
+Role:
+  ${data.role}
+Plugin Saveds:
+  ${data.pluginSavedsCount}
+`,true)
+          })
+        }
       } else if (cmd[0] == "login") {
         write("Username: ")
         input("text", (name) => {
@@ -203,8 +217,6 @@ let account = {username:"",password:""}
 let pass = ""
 let win = []
 let history = [];
-var speech = true;
-window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 //const voic = new SpeechRecognition();
 //voic.interimResults = true;
 const normalizePozition = (mouseX, mouseY) => {
@@ -286,6 +298,7 @@ function pluginUninstall(name, global) {
   $(`#plugin_${name}_html`).remove()
   $(`#plugin_${name}_css`).remove()
   $(`#plugin_${name}_js`).remove()
+  $(`.plugin_${name}`).remove()
   if (JSON.parse(localStorage.getItem("plugins")).includes(plugins[name].url) && global) {
     const p = JSON.parse(localStorage.getItem("plugins")).filter(function(arrayItem) {
     return arrayItem !== plugins[name].url;
@@ -333,12 +346,6 @@ const randomString = (len, an) => {
   }
   return str;
 }
-$("body").on("mousedown", (e) => {
-  const contextMenu = document.getElementById("context-menu");
-  if (e.target.offsetParent != contextMenu) {
-    contextMenu.classList.remove("visible");
-  }
-});
 const write = (msg, sys) => {
   msg = msg.toString()
   if (!sys)
@@ -491,7 +498,7 @@ jQuery(document).ready(function ($) {
       }
     }
   })
-  $("body").on("contextmenu", function(event) {
+  $("input").on("contextmenu", function(event) {
     event.preventDefault();
     event.stopPropagation();
     const contextMenu = document.getElementById("board-menu");
@@ -507,9 +514,28 @@ jQuery(document).ready(function ($) {
         navigator.clipboard.writeText(window.getSelection().toString())
       }).show()
     }
+    if ($(event.target).closest('input').length) {
+      $("#menu-paste").show().click(function () {
+        navigator.clipboard.readText()
+  .then(pase => {
+    const input = $(event.target).closest('input');
+    const startPos = input[0].selectionStart;
+    const endPos = input[0].selectionEnd;
+    const text = input.val();
+    const newText = text.substring(0, startPos) + pase + text.substring(endPos, text.length);
+    input.val(newText);
+  })
+  .catch(err => console.log(err));
+      })
+    } else {
+      $("#menu-paste").hide()
+    }
     contextMenu.classList.add("visible");
   });
-  $("body, #board-menu .item").click(function () {
-    document.getElementById("board-menu").classList.remove("visible");
-  })
+  $("body").on("click", (e) => {
+    const contextMenu = document.getElementById("board-menu");
+    if (e.target.offsetParent != contextMenu) {
+      contextMenu.classList.remove("visible");
+    }
+  });
 })
