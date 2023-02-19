@@ -1,27 +1,26 @@
 function speedTestDownload(call) {
-  var imageAddr = "https://cdn.orielhaim.tk/sgfp9.png";
+  var url = "https://cdn.orielhaim.tk/sgfp9.png";
   var downloadSize = 4995374; //bytes
   var startTime, endTime;
-  var download = new Image();
   startTime = (new Date()).getTime();
   var cacheBuster = "?nnn=" + startTime;
-  download.src = imageAddr + cacheBuster;
-  download.onload = function () {
-    var speedBps = ((downloadSize * 8) / (((new Date()).getTime() - startTime) / 1000)).toFixed(2);
-    var speedKbps = (speedBps / 1024).toFixed(2);
-    var speedMbps = (speedKbps / 1024).toFixed(2);
-     call({status: "ok", test: [speedBps, speedKbps, speedMbps]});
-  }
-  download.onerror = function (err) {
-    console.log(err)
-    call({status: "err"})
-  }
+  fetch(url + cacheBuster, { method: 'HEAD', cache: 'no-store' })
+    .then(response => {
+      var speedBps = ((downloadSize * 8) / (((new Date()).getTime() - startTime) / 1000)).toFixed(2);
+      var speedKbps = (speedBps / 1024).toFixed(2);
+      var speedMbps = (speedKbps / 1024).toFixed(2);
+      call({status: "ok", test: [speedBps, speedKbps, speedMbps]});
+    })
+    .catch(err => {
+      console.log(err)
+      call({status: "err", error: "Network error"});
+    })
 }
 const name = "net"
 const short = "Data options over the network"
 const script = (cmd, op) => {
   if (!cmd[0]) {
-        next()
+        op.next()
       } else if (cmd[0] == "location") {
         op.write("<i id='load'>Loading data...</i>",true)
         navigator.geolocation.getCurrentPosition((pos) => {

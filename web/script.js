@@ -56,7 +56,7 @@ const commands = {
             write("<i id='load'>Validates user data...</i>",true)
             socket.emit("account login", name, pass, (data) => {
               $("#load").remove()
-              if (data == 200) {
+              if (data.status == 200) {
                 write("<br><b success>authenticated You are now logged in.</b><br>",true)
                 $("#name").html(name + "@$>")
                 account.username = name
@@ -209,7 +209,7 @@ window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecogn
 //voic.interimResults = true;
 const normalizePozition = (mouseX, mouseY) => {
   const scope = document.querySelector("body");
-  const contextMenu = document.getElementById("context-menu");
+  const contextMenu = document.getElementById("board-menu");
         // ? compute what is the mouse position relative to the container element (scope)
         let {
           left: scopeOffsetX,
@@ -332,51 +332,6 @@ const randomString = (len, an) => {
     str += String.fromCharCode(r += r > 9 ? r < 36 ? 55 : 61 : 48);
   }
   return str;
-}
-function voicToText(lang) {
-  const id = randomString(10)
-  write(`<div id="${id}" oncontextmenu="openMenu(event, '${id}')"><i>Waiting...</i></div>`,true)
-  voic.start()
-  const el = $("#" + id)
-  voic.onsoundstart = () => {
-    el.html("<i>Listener...</i>")
-  }
-  voic.onresult = (e) => {
-    const text = e.results[0][0].transcript
-    el.html(text)
-    el.addClass("listener")
-    el.attr("lang", lang)
-    el.on("click", () => {
-      navigator.clipboard.writeText(text)
-    })
-  }
-  voic.onend = () => {
-    next()
-  }
-  voic.onerror = (e) => {
-    el.html(`<b error>Error: ${e.error}</b><br>`,true)
-  }
-}
-function openMenu(event, id) {
-  const contextMenu = document.getElementById("context-menu");
-  event.preventDefault();
-  const { clientX: mouseX, clientY: mouseY } = event;
-  const { normalizedX, normalizedY } = normalizePozition(mouseX, mouseY);
-  contextMenu.classList.remove("visible");
-  contextMenu.style.top = `${normalizedY}px`;
-  contextMenu.style.left = `${normalizedX}px`;
-  $("#menu-copy").click(function () {
-    navigator.clipboard.writeText($("#" + id).html())
-  })
-  $("#menu-playback").click(function () {
-    const speek = new SpeechSynthesisUtterance();
-    speek.text = $("#" + id).html()
-    speek.lang = $("#" + id).attr("lang")
-    window.speechSynthesis.speak(speek);
-  })
-  setTimeout(() => {
-    contextMenu.classList.add("visible");
-  });
 }
 $("body").on("mousedown", (e) => {
   const contextMenu = document.getElementById("context-menu");
@@ -536,9 +491,25 @@ jQuery(document).ready(function ($) {
       }
     }
   })
-  $(".listener").on("contextmenu", function(e) {
-  e.preventDefault();
-  e.stopPropagation(); // הוספת שורה זו
-  alert("Handler for .contextmenu() called.");
-});
+  $("body").on("contextmenu", function(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const contextMenu = document.getElementById("board-menu");
+    const { clientX: mouseX, clientY: mouseY } = event;
+    const { normalizedX, normalizedY } = normalizePozition(mouseX, mouseY);
+    contextMenu.classList.remove("visible");
+    contextMenu.style.top = `${normalizedY}px`;
+    contextMenu.style.left = `${normalizedX}px`;
+    if (!window.getSelection().toString()) {
+      $("#menu-copy").hide()
+    } else {
+      $("#menu-copy").click(function () {
+        navigator.clipboard.writeText(window.getSelection().toString())
+      }).show()
+    }
+    contextMenu.classList.add("visible");
+  });
+  $("body, #board-menu .item").click(function () {
+    document.getElementById("board-menu").classList.remove("visible");
+  })
 })

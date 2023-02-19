@@ -1,53 +1,93 @@
-#output::selection, #cmdline::selection {
-    background: #868686;
-}
+/* Global Styles */
+
 html, body {
-    height: 100%;
-    margin: 0;
-    width: 100%;
+  height: 100%;
+  margin: 0;
+  width: 100%;
 }
+
 body {
-    background-color: #0c0c0c;
-    color: #fff;
-    font-family: Inconsolata,monospace;
-    font-size: 14px;
-  display:block;
+  background-color: #0c0c0c;
+  color: #fff;
+  font-family: Inconsolata, monospace;
+  font-size: 14px;
+  display: block;
+  word-wrap: break-word;
 }
+
+br, #name, #header {
+  user-select: none;
+}
+
+input {
+  width: 90%;
+  margin: 0;
+  font: inherit;
+  border: none;
+  background-color: transparent;
+  outline: none;
+  color: inherit;
+}
+
+[error] {
+  color: red;
+}
+
+[success] {
+  color: green;
+}
+
+[blur] {
+  color: #959595;
+}
+
+/* Output Styles */
+
+#output::selection, #cmdline::selection {
+  background: #868686;
+}
+
+#output {
+  -moz-user-select: text;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
 #container output {
-    clear: both;
-    width: 100%;
+  clear: both;
+  width: 100%;
 }
+
 #prompt {
-  display:none;
+  display: none;
 }
+
 #name {
   margin-right: 5px;
   float: left;
   color: #ffffff;
 }
-input {
-  width: 90%;
-    margin: 0;
-    font: inherit;
-    border: none;
-    background-color: transparent;
-    outline: none;
-    color: inherit;  
-}
+
 #header {
   width: 99.8%;
   margin: 0px;
+  left: 3%;
   padding: 1px;
   background-color: #dadada;
   color: black;
   margin-bottom: 10px;
   position: sticky;
   top: 0px;
+  opacity: 0;
+  animation: fadeIn 0.5s forwards;
 }
-br, #name, #header{
-  user-select: none;
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
-#context-menu {
+
+/* Board Menu Styles */
+#board-menu {
   position: fixed;
   z-index: 10000;
   width: 150px;
@@ -56,55 +96,32 @@ br, #name, #header{
   transform: scale(0);
   transform-origin: top left;
 }
-#context-menu.visible {
+#board-menu.visible {
   transform: scale(1);
   transition: transform 200ms ease-in-out;
 }
-#context-menu .item {
+
+#board-menu .item {
   padding: 8px 10px;
   font-size: 15px;
   color: #eee;
   cursor: pointer;
   border-radius: inherit;
   position: relative;
-  -webkit-transition-duration: 0.4s; /* Safari */
+  -webkit-transition-duration: 0.4s;
   transition-duration: 0.4s;
   text-decoration: none;
   overflow: hidden;
 }
-#context-menu .item:hover {
+
+#board-menu .item:hover {
   background: #343434;
 }
-#context-menu .item i {
+
+#board-menu .item i {
   font-size: 14px;
 }
-[error] {
-  color: red;
-}
-[success] {
-  color: green;
-}
-[blur] {
-  color: #959595;
-}
-.listener {
-  border: 2px solid white;
-  padding: 0.2%;
-  border-radius: 5px;
-  box-shadow: 0px 0px 5px;
-  margin: 0.2%;
-  position: relative;
-  -webkit-transition-duration: 0.4s; /* Safari */
-  transition-duration: 0.4s;
-  text-decoration: none;
-  overflow: hidden;
-  cursor: pointer;
-}
-.listener:hover {
-  opacity: 0.8;
-  cursor: pointer;
-}
-.listener:after, #context-menu .item:after{
+#board-menu .item:after{
   content: "";
   background: #737373;
   display: block;
@@ -114,12 +131,11 @@ br, #name, #header{
   margin-left: -20px!important;
   margin-top: -120%;
   opacity: 0;
-  transition: all 0.8s
+  transition: all 0.8s;
 }
-
-.listener:active:after, #context-menu .item:active:after{
+#board-menu .item:active:after{
   padding: 0;
   margin: 0;
   opacity: 1;
-  transition: 0s
+  transition: 0s;
 }

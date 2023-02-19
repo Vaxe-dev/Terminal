@@ -3,21 +3,44 @@ const app = express();
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 const fs = require("fs");
+const path = require('path');
+
+const PORT = 8080;
+const ONLINE_DIR = path.join(__dirname, 'online');
+const ACCOUNTS_DIR = path.join(__dirname, 'accounts');
+const CERTIFICATES_DIR = path.join(__dirname, 'certificates');
+const PLUGINS_DIR = path.join(__dirname, 'plugins');
+const WEB_DIR = path.join(__dirname, 'web');
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*")
-  res.header("Access-Control-Allow-Origin-Headers", "Origin, X-Requested-With, Content-Type, Accept, authorization")
-  if (req.methos === "OPTIONS") {
-    res.header("Access-Control-Allow-Origin-Methods", "PUT, POST, PATCH, DELETE, GET")
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, authorization');
+  if (req.method === 'OPTIONS') {
+    res.header('Access-Control-Allow-Methods', 'PUT, POST, PATCH, DELETE, GET');
     return res.status(200).json({});
   }
-  next()
-})
-app.use(express.static('web'));
+  next();
+});
+
+// Serve the static files in the 'web' directory
+app.use(express.static(WEB_DIR));
+
+// Handle all other routes
 app.use((req, res) => {
-  if (req.path == "/") {
-    res.sendFile(__dirname + "/web/index,html")
+  console.log(req.path);
+  if (req.path == '/') {
+    res.sendFile(path.join(WEB_DIR, 'index.html'));
+  } else if (req.path.startsWith('/plugin/')) {
+    const pluginName = req.path.split('/')[2];
+    const pluginPath = path.join(PLUGINS_DIR, `${pluginName}.js`);
+    if (fs.existsSync(pluginPath)) {
+      res.sendFile(pluginPath);
+    } else {
+      res.status(404).send('Plugin not found');
+    }
+  } else {
+    res.status(404).send('Not found');
   }
-})
+});
 io.on('connection', function(socket) {
   socket.on("start", function (reply) {
     reply(JSON.parse(fs.readFileSync(__dirname + "/config.json")), fs.readdirSync(__dirname + "/web/commands"))
@@ -29,7 +52,9 @@ io.on('connection', function(socket) {
     const acc = JSON.parse(fs.readFileSync(__dirname + "/accounts/" + name + ".json"))
     if (acc.password != pass) return call({status: 400})
     call({status: 200, pluginSaveds: acc.pluginSaveds})
-    fs.writeFileSync(__dirname + "/online/" + socket.id + ".json",JSON.stringify({account:name}))
+    const a = JSON.parse(fs.readFileSync(__dirname + "/online/" + socket.id + ".json"))
+    a.account = name
+    fs.writeFileSync(__dirname + "/online/" + socket.id + ".json",JSON.stringify(a))
   })
   socket.on("account logout", function (name, pass, call) {
     const accs = fs.readdirSync(__dirname + "/accounts")
@@ -37,7 +62,9 @@ io.on('connection', function(socket) {
     const acc = JSON.parse(fs.readFileSync(__dirname + "/accounts/" + name + ".json"))
     if (acc.password != pass) return call(false)
     call(true)
-    fs.writeFileSync(__dirname + "/online/" + socket.id + ".json",JSON.stringify({account:""}))
+    const a = JSON.parse(fs.readFileSync(__dirname + "/online/" + socket.id + ".json"))
+    a.account = ""
+    fs.writeFileSync(__dirname + "/online/" + socket.id + ".json",JSON.stringify(a))
   })
   socket.on("check certificate", function (url, cer, call) {
     if (!fs.existsSync(__dirname + "/certificates/" + cer + ".json")) return call({exists: false})
