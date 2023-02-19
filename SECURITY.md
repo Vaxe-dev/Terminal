@@ -1,6 +1,6 @@
 # Security Policy
 
-## Supported Versions
+## Supported Versions (Software)
 Supported versions that receive frequent security updates.
 | Version | Supported |
 | ------- | --------- |
