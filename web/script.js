@@ -169,7 +169,7 @@ Plugin Saveds:
   },
   tpm: {
     short: "Terminal Plugin Manager",
-    script: (cmd) => {
+    script: (cmd, op) => {
       if (cmd[0] == "install" || cmd[0] == "i") {
         if (!cmd[1]) return next()
         cmd[1] = cmd[1].replace("https://","")
@@ -179,7 +179,7 @@ Plugin Saveds:
             write(`This plugin does not have a security certificate, are you sure you want to install it? (y/n)\n`)
             input("text", (out) => {
               if (out == "y") {
-                pluginInstall(cmd[1], "low", (cmd[2] == "--save"))
+                pluginInstall(cmd[1], "low", (cmd[2] == "--save"), op.hash)
               } else {
                 next()
               }
@@ -187,9 +187,10 @@ Plugin Saveds:
           } else {
             socket.emit("check certificate", cmd[1], data.certificate, (status) => {
               if (status.exists == true && status.status == true && data.type == status.type) {
-                pluginInstall(cmd[1], status.level, (cmd[2] == "--save"))
+                pluginInstall(cmd[1], status.level, (cmd[2] == "--save"), op.hash)
               } else {
-                write("The plugin is advertised under a fake security certificate, it cannot be installed.\n")
+                if (!op.hash)
+                  write("The plugin is advertised under a fake security certificate, it cannot be installed.\n")
                 next()
               }
             })
@@ -256,45 +257,46 @@ function pluginInstall(url, level, save, hash) {
     if (data.type == "script") {
       if (!pluginNames.includes(data.name)) {
         pluginNames.push(data.name)
-      plugins[data.name] = {}
-      plugins[data.name].short = data.short
-      plugins[data.name].script = data.script
-      plugins[data.name].url = url
-      if (level == "low" || level == "medium" || level == "high") {
-        if (!!data.css) {
-          const css = `<style id="plugin_${data.name}_css">${data.css}</style>`
-          $("head").append(css)
+        plugins[data.name] = {}
+        plugins[data.name].short = data.short
+        plugins[data.name].script = data.script
+        plugins[data.name].url = url
+        plugins[data.name].description = data.description
+        if (level == "low" || level == "medium" || level == "high") {
+          if (!!data.css) {
+            const css = `<style id="plugin_${data.name}_css">${data.css}</style>`
+            $("head").append(css)
+          }
+        }
+        if (level == "medium" || level == "high") {
+          if (!!data.html) {
+            const html = `<div id="plugin_${data.name}_html">${data.html}</div>`
+            $("body").append(html)
+          }
+        }
+        if (level == "high") {
+          if (!!data.js) {
+            const js = `<script id="plugin_${data.name}_js">${data.js}</script>`
+            $("body").append(js)
+          }
         }
       }
-      if (level == "medium" || level == "high") {
-        if (!!data.html) {
-          const html = `<div id="plugin_${data.name}_html">${data.html}</div>`
-          $("body").append(html)
-        }
-      }
-      if (level == "high") {
-        if (!!data.js) {
-        const js = `<script id="plugin_${data.name}_js">${data.js}</script>`
-        $("body").append(js)
-        }
-      }
-    }
       if (!hash)
-      write(`<b success>The plugin has been successfully installed.</b><br>`,true)
+        write(`<b success>The plugin has been successfully installed.</b><br>`,true)
       }
-    next()
-    if (save) {
-      if (!localStorage.getItem("plugins")) {
-        localStorage.setItem("plugins", JSON.stringify([]))
-      }
-      const p = JSON.parse(localStorage.getItem("plugins"))
-      if (!p.includes(url)) {
-        p.push(url)
-        localStorage.setItem("plugins", JSON.stringify(p))
-      }
-      if (!!account.username) {
-        socket.emit("save plugin", account.username, account.password, url, data.name)
-      }
+      next()
+      if (save) {
+        if (!localStorage.getItem("plugins")) {
+          localStorage.setItem("plugins", JSON.stringify([]))
+        }
+        const p = JSON.parse(localStorage.getItem("plugins"))
+        if (!p.includes(url)) {
+          p.push(url)
+          localStorage.setItem("plugins", JSON.stringify(p))
+        }
+        if (!!account.username) {
+          socket.emit("save plugin", account.username, account.password, url, data.name)
+        }
     }
   })
 }
@@ -402,7 +404,7 @@ function cmdFillter(cmd) {
   return cmd
 }
 
-function capture(hash, com) {
+function capture(hash = false, com) {
   var cmd = ($("#cmdline").val() || com);
   if (!cmd) 
     return write(`<br>${account.username}@$>`,true)
@@ -415,7 +417,7 @@ function capture(hash, com) {
   cmd = cmd.split(" ")
   const c = cmd[0]
   cmd.splice(0,1)
-  const op = {write: write, next: next, input: input, randomString: randomString}
+  const op = {write: write, next: next, input: input, randomString: randomString, hash: hash}
   if (commandNames.includes(c)) {
     commands[c].script(cmd, op)
   } else if (pluginNames.includes(c)) {
@@ -439,7 +441,8 @@ socket.emit("start", (data, cmds) => {
   cmds.map((a) => {cmdAdd(a)})
   if (!!localStorage.getItem("plugins")) {
     JSON.parse(localStorage.getItem("plugins")).map((a, b) => {
-      import(JSON.parse(localStorage.getItem("plugins"))[b]).then((data) => {
+      capture(true, "tpm i " + JSON.parse(localStorage.getItem("plugins"))[b])
+      /*import(JSON.parse(localStorage.getItem("plugins"))[b]).then((data) => {
           if (!data.certificate) {
             write(`This plugin does not have a security certificate, are you sure you want to install it? (y/n)\n`)
             input("text", (out) => {
@@ -458,14 +461,15 @@ socket.emit("start", (data, cmds) => {
               }
             })
           }
-        })
+        })*/
     })
   }
   socket.emit("account login", localStorage.getItem("username"), localStorage.getItem("password"), (out) => {
     if (out.status == 200) {
       out.pluginSaveds.map((a) => {
         if (!pluginNames.includes(a.name)) {
-          pluginInstall(a.url, a.level, false, true)
+          //pluginInstall(a.url, a.level, false, true)
+          capture(true, "tpm i " + a.url)
         }
       })
       $("#name").html(localStorage.getItem("username") + "@$>")

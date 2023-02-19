@@ -40,6 +40,159 @@ input {
 [blur] {
   color: #959595;
 }
+[link] {
+  text-decoration: none;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-position: 0% 100%;
+  background-repeat: no-repeat;
+  background-size: 0% 1px;
+  transition: background-size cubic-bezier(0,.5,0,1) 0.3s;
+}
+
+[link]:hover,
+[link]:focus {
+  text-decoration: none;
+  background-size: 100% 1px;
+}
+/* Output Styles */
+
+#output::selection, #cmdline::selection {
+  background: #868686;
+}
+
+#output {
+  -moz-user-select: text;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+#container output {
+  clear: both;
+  width: 100%;
+}
+
+#prompt {
+  display: none;
+}
+
+#name {
+  margin-right: 5px;
+  float: left;
+  color: #ffffff;
+}
+
+#header {
+  width: 99.8%;
+  margin: 0px;
+  left: 3%;
+  padding: 1px;
+  background-color: #dadada;
+  color: black;
+  margin-bottom: 10px;
+  position: sticky;
+  top: 0px;
+  opacity: 0;
+  animation: fadeIn 0.5s forwards;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Board Menu Styles */
+#board-menu {
+  position: fixed;
+  z-index: 10000;
+  width: 150px;
+  background: #1b1a1a;
+  border-radius: 5px;
+  transform: scale(0);
+  transform-origin: top left;
+}
+#board-menu.visible {
+  transform: scale(1);
+  transition: transform 200ms ease-in-out;
+}
+
+#board-menu .item {
+  padding: 8px 10px;
+  font-size: 15px;
+  color: #eee;
+  cursor: pointer;
+  border-radius: inherit;
+  position: relative;
+  -webkit-transition-duration: 0.4s;
+  transition-duration: 0.4s;
+  text-decoration: none;
+  overflow: hidden;
+}
+
+#board-menu .item:hover {
+  background: #343434;
+}
+
+#board-menu .item i {
+  font-size: 14px;
+}
+#board-menu .item:after{
+  content: "";
+  background: #737373;
+  display: block;
+  position: absolute;
+  padding-top: 300%;
+  padding-left: 350%;
+  margin-left: -20px!important;
+  margin-top: -120%;
+  opacity: 0;
+  transition: all 0.8s;
+}
+#board-menu .item:active:after{
+  padding: 0;
+  margin: 0;
+  opacity: 1;
+  transition: 0s;
+}/* Global Styles */
+
+html, body {
+  height: 100%;
+  margin: 0;
+  width: 100%;
+}
+
+body {
+  background-color: #0c0c0c;
+  color: #fff;
+  font-family: Inconsolata, monospace;
+  font-size: 14px;
+  display: block;
+  word-wrap: break-word;
+}
+
+br, #name, #header {
+  user-select: none;
+}
+
+input {
+  width: 90%;
+  margin: 0;
+  font: inherit;
+  border: none;
+  background-color: transparent;
+  outline: none;
+  color: inherit;
+}
+
+[error] {
+  color: red;
+}
+
+[success] {
+  color: green;
+}
+
+[blur] {
+  color: #959595;
+}
 
 /* Output Styles */
 
