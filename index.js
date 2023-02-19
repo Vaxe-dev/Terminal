@@ -6,12 +6,15 @@ const fs = require("fs");
 const path = require('path');
 const fetch = require('node-fetch');
 
-const PORT = 8080;
-const ONLINE_DIR = path.join(__dirname, 'online');
-const ACCOUNTS_DIR = path.join(__dirname, 'accounts');
-const CERTIFICATES_DIR = path.join(__dirname, 'certificates');
 const PLUGINS_DIR = path.join(__dirname, 'plugins');
 const WEB_DIR = path.join(__dirname, 'web');
+var RateLimit = require('express-rate-limit');
+var limiter = new RateLimit({
+  windowMs: 1*60*1000, // 1 minute
+  max: 20
+});
+
+app.use(limiter);
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, authorization');
